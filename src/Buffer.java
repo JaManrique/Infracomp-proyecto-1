@@ -4,5 +4,6 @@ import java.util.Queue;
 
 public class Buffer {
 
-	Queue<Mensaje> buffer; 
+	private int capacidad;
+	private Queue<Mensaje> buffer;
 }
