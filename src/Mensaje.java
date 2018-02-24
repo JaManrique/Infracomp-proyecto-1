@@ -4,9 +4,9 @@ public class Mensaje
 	private String consulta;
 	private String respuesta;
 	
-	public Mensaje(String consulta) {
+	public Mensaje() {
 		super();
-		this.consulta = consulta;
+		this.consulta = consultaAleatoria();
 	}
 	
 	public String getConsulta() {
@@ -21,5 +21,7 @@ public class Mensaje
 		this.respuesta = respuesta;
 	}
 	
-	
+	private String consultaAleatoria() {
+		return "";
+	}
 }
