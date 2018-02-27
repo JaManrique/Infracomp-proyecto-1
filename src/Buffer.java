@@ -47,7 +47,15 @@ public class Buffer {
 		int numClientes = Integer.parseInt(p.getProperty("numClientes"));
 		int numServidores = Integer.parseInt(p.getProperty("numServidores"));
 		int numConsultas = Integer.parseInt(p.getProperty("numConsultas"));
+		int numThreads = Integer.parseInt(p.getProperty("numThreads"));
 		
+		Buffer buffer = new Buffer();
 		
+		for(int i=0; i < numServidores; i++){
+			new Servidor(numThreads, buffer);
+		}
+		for(int i=0; i < numClientes; i++){
+			new Cliente(buffer, numConsultas).start();
+		}
 	}
 }

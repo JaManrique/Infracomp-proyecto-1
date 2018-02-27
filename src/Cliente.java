@@ -2,16 +2,15 @@ import java.util.Random;
 
 public class Cliente extends Thread{
 
-	private static final int UPPER_QUERY_RANDOM_BOUND = 50;
 	private static final int UPPER_MESSAGE_RANDOM_BOUND = 500;
 
 	private int numConsultas;
 	private Mensaje msg;
 	private Buffer buffer;
 
-	public Cliente(Buffer buffer) {
+	public Cliente(Buffer buffer, int numConsultas) {
 		Random r = new Random();
-		numConsultas = r.nextInt(UPPER_QUERY_RANDOM_BOUND);
+		this.numConsultas = numConsultas;
 		this.buffer = buffer;
 		if (this.buffer == null)
 		{
