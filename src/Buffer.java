@@ -40,7 +40,7 @@ public class Buffer {
 				try {
 					wait();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					System.out.println("Apagado");
 				}
 			}
 			Mensaje msg = buff.remove();
@@ -67,12 +67,29 @@ public class Buffer {
 		int capacidad = Integer.parseInt(p.getProperty("capacidad"));
 
 		Buffer buffer = new Buffer(capacidad);
+		Servidor[] servidores = new Servidor[numServidores]; 
+		Object fin = new Object();
 
 		for (int i = 0; i < numServidores; i++) {
-			new Servidor(numThreads, buffer);
+			servidores[i] = new Servidor(numThreads, buffer);
 		}
 		for (int i = 0; i < numClientes; i++) {
-			new Cliente(buffer, numConsultas).start();
+			new Cliente(buffer, numConsultas, fin).start();
+		}
+		
+		int clientesTerminados = 0;
+		while(clientesTerminados++ < numClientes){
+			try {
+				synchronized (fin) {					
+					fin.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println(clientesTerminados);
+		}
+		for(Servidor serv : servidores){
+			serv.apagar();
 		}
 	}
 }

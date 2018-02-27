@@ -7,11 +7,13 @@ public class Cliente extends Thread {
 	private int numConsultas;
 	private Mensaje msg;
 	private Buffer buffer;
+	private Object fin;
 
-	public Cliente(Buffer buffer, int numConsultas) {
+	public Cliente(Buffer buffer, int numConsultas, Object fin) {
 		Random r = new Random();
 		this.numConsultas = numConsultas;
 		this.buffer = buffer;
+		this.fin = fin;
 		if (this.buffer == null) {
 			System.out.println("El buffer no debe ser nulo");
 		}
@@ -23,6 +25,9 @@ public class Cliente extends Thread {
 			msg = new Mensaje(Integer.toString(r.nextInt(UPPER_MESSAGE_RANDOM_BOUND)));
 			meterAlBuffer(msg);
 			System.out.println("Mensaje resuelto?: " + msg.getRespuesta());
+		}
+		synchronized (fin) {
+			fin.notify();
 		}
 	}
 

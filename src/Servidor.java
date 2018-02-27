@@ -19,4 +19,9 @@ public class Servidor implements Runnable{
 			buffer.responder();
 		}
 	}
+
+	public void apagar() {
+		for(Thread t : threads)
+			t.interrupt();
+	}
 }
