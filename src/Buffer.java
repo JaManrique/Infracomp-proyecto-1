@@ -1,12 +1,18 @@
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Properties;
 import java.util.Queue;
 public class Buffer {
 
 	private int capacidad;
 	private Queue<Mensaje> buff;
+	
+	public Buffer(int capacidad) {
+		this.capacidad = capacidad;
+		buff = new ArrayDeque<>();
+	}
 	
 	public synchronized void consultar(Mensaje msg)
 	{
@@ -48,8 +54,9 @@ public class Buffer {
 		int numServidores = Integer.parseInt(p.getProperty("numServidores"));
 		int numConsultas = Integer.parseInt(p.getProperty("numConsultas"));
 		int numThreads = Integer.parseInt(p.getProperty("numThreads"));
+		int capacidad = Integer.parseInt(p.getProperty("capacidad"));
 		
-		Buffer buffer = new Buffer();
+		Buffer buffer = new Buffer(capacidad);
 		
 		for(int i=0; i < numServidores; i++){
 			new Servidor(numThreads, buffer);
