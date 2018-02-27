@@ -9,6 +9,8 @@ public class Buffer {
 	private int capacidad;
 	private Queue<Mensaje> buff;
 	
+	private int machete = 0;
+	
 	public Buffer(int capacidad) {
 		this.capacidad = capacidad;
 		buff = new ArrayDeque<>();
@@ -40,6 +42,7 @@ public class Buffer {
 		}
 		Mensaje msg = buff.remove();
 		msg.setRespuesta(Integer.toString(Integer.parseInt(msg.getConsulta()) + 1));
+		System.out.println("Contador respuestas: " + ++machete);
 		msg.notify();
 	}
 	
