@@ -1,6 +1,6 @@
 import java.util.Random;
 
-public class Cliente extends Thread{
+public class Cliente extends Thread {
 
 	private static final int UPPER_MESSAGE_RANDOM_BOUND = 500;
 
@@ -12,23 +12,21 @@ public class Cliente extends Thread{
 		Random r = new Random();
 		this.numConsultas = numConsultas;
 		this.buffer = buffer;
-		if (this.buffer == null)
-		{
+		if (this.buffer == null) {
 			System.out.println("El buffer no debe ser nulo");
 		}
 	}
-	
+
 	public void run() {
 		Random r = new Random();
-		for(int i = 0; i < numConsultas; i++)
-		{
+		for (int i = 0; i < numConsultas; i++) {
 			msg = new Mensaje(Integer.toString(r.nextInt(UPPER_MESSAGE_RANDOM_BOUND)));
 			meterAlBuffer(msg);
 			System.out.println("Mensaje resuelto?: " + msg.getRespuesta());
 		}
 	}
-	
-	private void meterAlBuffer(Mensaje msg){
+
+	private void meterAlBuffer(Mensaje msg) {
 		buffer.consultar(msg);
 	}
 }

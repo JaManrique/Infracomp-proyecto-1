@@ -4,24 +4,26 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Properties;
 import java.util.Queue;
+
 public class Buffer {
 
 	private int capacidad;
 	private Queue<Mensaje> buff;
-	
+
 	private int machete = 0;
-	
+
 	public Buffer(int capacidad) {
 		this.capacidad = capacidad;
 		buff = new ArrayDeque<>();
 	}
-	
-	public synchronized void consultar(Mensaje msg)
-	{
-		while(buff.size() == capacidad)
-			Thread.yield();
-		buff.add(msg);
-		notify();
+
+	public void consultar(Mensaje msg) {
+		synchronized (this) {
+			while (buff.size() == capacidad)
+				Thread.yield();
+			buff.add(msg);
+			notify();
+		}
 		synchronized (msg) {
 			try {
 				msg.wait();
@@ -29,23 +31,28 @@ public class Buffer {
 				e.printStackTrace();
 			}
 		}
+
 	}
-	
-	public synchronized void responder()
-	{
-		while(buff.isEmpty()){
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+
+	public void responder() {
+		synchronized (this) {
+			while (buff.isEmpty()) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			Mensaje msg = buff.remove();
+			msg.setRespuesta(Integer.toString(Integer.parseInt(msg.getConsulta()) + 1));
+			System.out.println("Contador respuestas: " + ++machete);
+			synchronized (msg) {
+
+				msg.notify();
 			}
 		}
-		Mensaje msg = buff.remove();
-		msg.setRespuesta(Integer.toString(Integer.parseInt(msg.getConsulta()) + 1));
-		System.out.println("Contador respuestas: " + ++machete);
-		msg.notify();
 	}
-	
+
 	public static void main(String[] args) {
 		Properties p = new Properties();
 		try {
@@ -58,13 +65,13 @@ public class Buffer {
 		int numConsultas = Integer.parseInt(p.getProperty("numConsultas"));
 		int numThreads = Integer.parseInt(p.getProperty("numThreads"));
 		int capacidad = Integer.parseInt(p.getProperty("capacidad"));
-		
+
 		Buffer buffer = new Buffer(capacidad);
-		
-		for(int i=0; i < numServidores; i++){
+
+		for (int i = 0; i < numServidores; i++) {
 			new Servidor(numThreads, buffer);
 		}
-		for(int i=0; i < numClientes; i++){
+		for (int i = 0; i < numClientes; i++) {
 			new Cliente(buffer, numConsultas).start();
 		}
 	}
