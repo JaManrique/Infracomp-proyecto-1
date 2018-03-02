@@ -7,6 +7,7 @@ import java.util.Queue;
 
 public class Buffer {
 
+	private boolean apagar;
 	private int capacidad;
 	private Queue<Mensaje> buff;
 
@@ -15,6 +16,7 @@ public class Buffer {
 	public Buffer(int capacidad) {
 		this.capacidad = capacidad;
 		buff = new ArrayDeque<>();
+		apagar = false;
 	}
 
 	public void consultar(Mensaje msg) {
@@ -22,7 +24,7 @@ public class Buffer {
 			while (buff.size() == capacidad)
 				Thread.yield();
 			buff.add(msg);
-			notify();
+			this.notify();
 		}
 		synchronized (msg) {
 			try {
@@ -34,22 +36,24 @@ public class Buffer {
 
 	}
 
-	public void responder() {
+	public boolean responder() {
 		synchronized (this) {
 			while (buff.isEmpty()) {
 				try {
-					wait();
+					this.wait();
 				} catch (InterruptedException e) {
-					System.out.println("Apagado");
+					e.printStackTrace();
 				}
+				if(apagar)
+					return false;
 			}
 			Mensaje msg = buff.remove();
 			msg.setRespuesta(Integer.toString(Integer.parseInt(msg.getConsulta()) + 1));
 			System.out.println("Contador respuestas: " + ++machete);
 			synchronized (msg) {
-
 				msg.notify();
 			}
+			return true;
 		}
 	}
 
@@ -86,10 +90,10 @@ public class Buffer {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			System.out.println(clientesTerminados);
 		}
-		for(Servidor serv : servidores){
-			serv.apagar();
+		buffer.apagar = true;
+		synchronized (buffer) {
+			buffer.notifyAll();				
 		}
 	}
 }

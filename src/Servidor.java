@@ -14,14 +14,6 @@ public class Servidor implements Runnable{
 	}
 	
 	public void run (){
-		while(true)
-		{
-			buffer.responder();
-		}
-	}
-
-	public void apagar() {
-		for(Thread t : threads)
-			t.interrupt();
+		while(buffer.responder());
 	}
 }
