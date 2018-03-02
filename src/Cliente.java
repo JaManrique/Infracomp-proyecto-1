@@ -24,7 +24,7 @@ public class Cliente extends Thread {
 		for (int i = 0; i < numConsultas; i++) {
 			msg = new Mensaje(Integer.toString(r.nextInt(UPPER_MESSAGE_RANDOM_BOUND)));
 			meterAlBuffer(msg);
-			System.out.println("Mensaje resuelto?: " + msg.getRespuesta());
+			//System.out.println("Mensaje resuelto: " + msg.getRespuesta());
 		}
 		synchronized (fin) {
 			fin.notify();

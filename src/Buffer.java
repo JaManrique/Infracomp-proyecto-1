@@ -11,7 +11,7 @@ public class Buffer {
 	private int capacidad;
 	private Queue<Mensaje> buff;
 
-	private int machete = 0;
+	//private int machete = 0;
 
 	public Buffer(int capacidad) {
 		this.capacidad = capacidad;
@@ -49,7 +49,7 @@ public class Buffer {
 			}
 			Mensaje msg = buff.remove();
 			msg.setRespuesta(Integer.toString(Integer.parseInt(msg.getConsulta()) + 1));
-			System.out.println("Contador respuestas: " + ++machete);
+			//System.out.println("Contador respuestas: " + ++machete);
 			synchronized (msg) {
 				msg.notify();
 			}
