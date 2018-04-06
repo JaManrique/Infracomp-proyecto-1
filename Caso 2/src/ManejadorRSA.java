@@ -1,14 +1,12 @@
 
 public class ManejadorRSA {
 
-	public static byte[] descifrar(byte[] llaveServ, String string) {
-		// TODO Auto-generated method stub
-		return null;
+	public static String descifrar(byte[] llaveServ, String string) {
+		return string;
 	}
 
 	public static String cifrar(byte[] llaveCliente, String string) {
-		// TODO Auto-generated method stub
-		return null;
+		return string;
 	}
 
 }

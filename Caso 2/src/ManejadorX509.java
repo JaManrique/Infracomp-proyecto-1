@@ -2,18 +2,15 @@
 public class ManejadorX509 {
 
 	public static byte[] darCertCliente() {
-		// TODO Auto-generated method stub
-		return null;
+		return new byte[]{};
 	}
 
 	public static boolean verificarCertServidor(byte[] certsrv) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	public static byte[] extraerLlave(byte[] certsrv) {
-		// TODO Auto-generated method stub
-		return null;
+		return new byte[]{};
 	}
 
 }

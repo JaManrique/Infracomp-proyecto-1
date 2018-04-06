@@ -37,6 +37,7 @@ public class MainCliente {
 		PrintWriter pw = new PrintWriter(os);
 		
 		pw.write(HOLA);
+		pw.flush();
 		
 		String s = br.readLine();
 		if(!s.equals(INICIO)){
@@ -74,13 +75,17 @@ public class MainCliente {
 		if(!S[0].equals(INICIO)){
 			throw new Exception("error al iniciar");
 		}
-		byte[] llaveSesion = ManejadorRSA.descifrar(llaveServ, S[1]);
+		byte[] llaveSesion = ManejadorRSA.descifrar(llaveServ, S[1]).getBytes();
 		
 		String pos = "41 24.2028, 2 10.4418";
 		pw.write(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
 		pw.write(ACT2 + ":" + ManejadorRSA.cifrar(llaveCliente, ManejadorMD5.hash(pos)));
 		
 		verificarEstado(br.readLine());
+		
+		pw.close();
+		br.close();
+		socket.close();
 
 	}
 
@@ -93,6 +98,18 @@ public class MainCliente {
 		}
 		else{
 			throw new Exception("error comunicacion");
+		}
+	}
+	
+	public static void main(String[] args) {
+		try {
+			new MainCliente().reportarEstado();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
