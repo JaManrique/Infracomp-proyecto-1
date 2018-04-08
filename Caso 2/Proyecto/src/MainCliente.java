@@ -5,6 +5,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.security.Key;
+
+import javax.crypto.spec.SecretKeySpec;
 
 
 
@@ -22,12 +25,12 @@ public class MainCliente {
 	private static final String AES = "AES";
 	private static final String BLOWFISH = "BLOWFISH";
 	private static final String RSA = "RSA";
-	private static final String CMD5 = "HMACMD5";
-	private static final String CSHA1 = "HMACSHA1";
-	private static final String CSHA256 = "HMACSHA256";
+	private static final String MD5 = "HMACMD5";
+	private static final String SHA1 = "HMACSHA1";
+	private static final String SHA256 = "HMACSHA256";
 
 	private String serverIp = "localhost";
-	private byte[] llaveCliente = null;
+	private Key llaveCliente = null;
 	
 	public void reportarEstado() throws IOException, Exception{
 		Socket socket = new Socket(serverIp, 8080);
@@ -41,9 +44,10 @@ public class MainCliente {
 		
 		String s = br.readLine();
 		if(!s.equals(INICIO)){
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
-		pw.write(ALG + ":" + AES + ":" + RSA + ":" + CMD5);
+		pw.write(ALG + ":" + AES + ":" + RSA + ":" + MD5);
 		
 		verificarEstado(br.readLine());
 		
@@ -55,6 +59,7 @@ public class MainCliente {
 		
 		s = br.readLine();
 		if(!s.equals(CERT_SERVIDOR)){
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("error certsrv");
 		}
 		
@@ -66,16 +71,19 @@ public class MainCliente {
 		}
 		else{
 			pw.write(ESTADO_ERROR);
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("certificado erroneo");
 		}
 
-		byte[] llaveServ = ManejadorX509.extraerLlave(certsrv);
+		Key llaveServ = ManejadorX509.extraerLlave(certsrv);
 		
 		String[] S = br.readLine().split(":");
 		if(!S[0].equals(INICIO)){
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
-		byte[] llaveSesion = ManejadorRSA.descifrar(llaveServ, S[1]).getBytes();
+		byte[] bytesSesion = ManejadorRSA.descifrar(llaveServ, S[1]).getBytes();
+		Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
 		
 		String pos = "41 24.2028, 2 10.4418";
 		pw.write(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
@@ -83,10 +91,14 @@ public class MainCliente {
 		
 		verificarEstado(br.readLine());
 		
+		cerrarRecursos(socket, br, pw);
+
+	}
+
+	private void cerrarRecursos(Socket socket, BufferedReader br, PrintWriter pw) throws IOException {
 		pw.close();
 		br.close();
 		socket.close();
-
 	}
 
 	private void verificarEstado(String S) throws Exception{
@@ -105,10 +117,8 @@ public class MainCliente {
 		try {
 			new MainCliente().reportarEstado();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

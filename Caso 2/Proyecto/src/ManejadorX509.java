@@ -1,3 +1,4 @@
+import java.security.Key;
 
 public class ManejadorX509 {
 
@@ -9,8 +10,8 @@ public class ManejadorX509 {
 		return true;
 	}
 
-	public static byte[] extraerLlave(byte[] certsrv) {
-		return new byte[]{};
+	public static Key extraerLlave(byte[] certsrv) {
+		return null;
 	}
 
 }
