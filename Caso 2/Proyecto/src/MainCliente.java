@@ -79,7 +79,7 @@ public class MainCliente {
 		
 		String pos = "41 24.2028, 2 10.4418";
 		pw.write(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
-		pw.write(ACT2 + ":" + ManejadorRSA.cifrar(llaveCliente, ManejadorMD5.hash(pos)));
+		pw.write(ACT2 + ":" + ManejadorRSA.cifrar(llaveCliente, new String(ManejadorMD5.hash(pos))));
 		
 		verificarEstado(br.readLine());
 		
