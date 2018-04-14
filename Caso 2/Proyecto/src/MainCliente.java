@@ -28,31 +28,35 @@ public class MainCliente {
 	private static final String MD5 = "HMACMD5";
 	private static final String SHA1 = "HMACSHA1";
 	private static final String SHA256 = "HMACSHA256";
+	
+	private static ManejadorX509 X509;
 
 	private String serverIp = "localhost";
 	private Key llaveCliente = null;
+	
+	public MainCliente() {
+		X509 = new ManejadorX509();
+	}
 	
 	public void reportarEstado() throws IOException, Exception{
 		Socket socket = new Socket(serverIp, 8080);
 		OutputStream os = socket.getOutputStream();
 		InputStream is = socket.getInputStream();
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		PrintWriter pw = new PrintWriter(os);
+		PrintWriter pw = new PrintWriter(os, true);
 		
-		pw.write(HOLA);
-		pw.flush();
-		
+		pw.println(HOLA);
 		String s = br.readLine();
-		if(!s.equals(INICIO)){
+		if(!INICIO.equals(s)){
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
-		pw.write(ALG + ":" + AES + ":" + RSA + ":" + MD5);
+		pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
 		
 		verificarEstado(br.readLine());
 		
-		pw.write(CERT_CLIENTE);
-		os.write(ManejadorX509.darCertCliente());
+		pw.println(CERT_CLIENTE);
+		os.write(X509.darCertCliente());
 		os.flush();
 		
 		verificarEstado(br.readLine());
@@ -66,16 +70,16 @@ public class MainCliente {
 		byte[] certsrv = new byte[is.available()];
 		is.read(certsrv);
 		
-		if(ManejadorX509.verificarCertServidor(certsrv)){
-			pw.write(ESTADO_OK);
+		if(X509.verificarCertServidor(certsrv)){
+			pw.println(ESTADO_OK);
 		}
 		else{
-			pw.write(ESTADO_ERROR);
+			pw.println(ESTADO_ERROR);
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("certificado erroneo");
 		}
 
-		Key llaveServ = ManejadorX509.extraerLlave(certsrv);
+		Key llaveServ = X509.extraerLlave(certsrv);
 		
 		String[] S = br.readLine().split(":");
 		if(!S[0].equals(INICIO)){
@@ -86,8 +90,8 @@ public class MainCliente {
 		Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
 		
 		String pos = "41 24.2028, 2 10.4418";
-		pw.write(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
-		pw.write(ACT2 + ":" + ManejadorRSA.cifrar(llaveCliente, new String(ManejadorMD5.hash(pos))));
+		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
+		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveCliente, new String(ManejadorMD5.hash(pos))));
 		
 		verificarEstado(br.readLine());
 		
@@ -102,10 +106,10 @@ public class MainCliente {
 	}
 
 	private void verificarEstado(String S) throws Exception{
-		if(S.equals(ESTADO_OK)){
+		if(ESTADO_OK.equals(S)){
 			return;
 		}
-		else if(S.equals(ESTADO_ERROR)){
+		else if(ESTADO_ERROR.equals(S)){
 			throw new Exception("estado error");
 		}
 		else{
