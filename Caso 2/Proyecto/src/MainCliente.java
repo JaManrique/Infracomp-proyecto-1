@@ -62,7 +62,7 @@ public class MainCliente {
 		verificarEstado(br.readLine());
 		
 		s = br.readLine();
-		if(!s.equals(CERT_SERVIDOR)){
+		if(!CERT_SERVIDOR.equals(s)){
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error certsrv");
 		}
