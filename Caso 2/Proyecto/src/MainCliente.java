@@ -98,7 +98,7 @@ public class MainCliente {
 		byte[] bytesSesion = ManejadorRSA.descifrar(X509.darLlavePrivada(), S[1]);
 		Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
 		
-		String pos = "<41 24.2028, 2 10.4418>";
+		String pos = "41 24.2028, 2 10.4418";
 		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
 		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
 		
