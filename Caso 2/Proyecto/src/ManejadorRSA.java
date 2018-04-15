@@ -14,23 +14,22 @@ import javax.xml.bind.DatatypeConverter;
 
 public class ManejadorRSA {
 
-	public static String descifrar(Key pKey, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+	public static byte[] descifrar(Key pKey, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		//System.out.println("key: " + pKey.toString() + " // msg: " + msg);
 		Cipher cipher = Cipher.getInstance("RSA");
 		//byte[] clearText = msg;
 		cipher.init(Cipher.DECRYPT_MODE, pKey);
 		System.out.println(DatatypeConverter.parseHexBinary(msg));
 		byte[] cipheredText = cipher.doFinal(DatatypeConverter.parseHexBinary(msg));
-		return new String(cipheredText);
-
+		return cipheredText;
 	}
 
-	public static String cifrar(Key pKey, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+	public static String cifrar(Key pKey, byte[] msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		Cipher cipher = Cipher.getInstance("RSA");
-		byte[] clearText = msg.getBytes();
+		byte[] clearText = msg;
 		cipher.init(Cipher.ENCRYPT_MODE, pKey);
 		byte[] cipheredText = cipher.doFinal(clearText);
-		return new String(cipheredText);
+		return DatatypeConverter.printHexBinary(cipheredText);
 	}
 
 }

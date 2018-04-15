@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.security.Key;
 
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 
 
@@ -94,12 +95,12 @@ public class MainCliente {
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
-		byte[] bytesSesion = ManejadorRSA.descifrar(llaveServ, S[1]).getBytes();
+		byte[] bytesSesion = ManejadorRSA.descifrar(X509.darLlavePrivada(), S[1]);
 		Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
 		
-		String pos = "41 24.2028, 2 10.4418";
+		String pos = "<41 24.2028, 2 10.4418>";
 		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
-		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveCliente, new String(ManejadorMD5.hash(pos))));
+		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
 		
 		verificarEstado(br.readLine());
 		

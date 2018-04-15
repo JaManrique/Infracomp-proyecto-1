@@ -51,6 +51,7 @@ public class ManejadorX509 {
 
 	private X509Certificate cert;
 	private X509CertificateHolder cert1;
+	private PrivateKey pr;
 
 	public ManejadorX509(){
 		Security.addProvider(new BouncyCastleProvider());
@@ -66,7 +67,7 @@ public class ManejadorX509 {
 		KeyPair key = keyGen.generateKeyPair();
 
 		//Llave privada del creador del CD (nosotros)
-		PrivateKey pr = key.getPrivate();
+		pr = key.getPrivate();
 		PublicKey pb = key.getPublic();		
 
 		Date inicio = new Date(); //Inicia => current millis
@@ -168,5 +169,9 @@ public class ManejadorX509 {
 	public static void main(String[] args) throws IOException {
 		ManejadorX509 a = new ManejadorX509();
 		a.verificarCertServidor(a.cert1.getEncoded());
+	}
+
+	public Key darLlavePrivada() {
+		return pr;
 	}
 }
