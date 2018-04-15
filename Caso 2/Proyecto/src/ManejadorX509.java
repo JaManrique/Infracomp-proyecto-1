@@ -142,7 +142,7 @@ public class ManejadorX509 {
 			System.out.println(certsrv);
 			X509CertificateHolder ch = new X509CertificateHolder(certsrv);
 			ContentVerifierProvider contentVerifierProvider = new JcaContentVerifierProviderBuilder()
-					.setProvider("BC").build(cert1.getSubjectPublicKeyInfo());
+					.setProvider("BC").build(ch.getSubjectPublicKeyInfo());
 
 			answer = ch.isSignatureValid(contentVerifierProvider);
 		}

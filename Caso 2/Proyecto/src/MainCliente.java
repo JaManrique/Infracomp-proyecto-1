@@ -67,7 +67,14 @@ public class MainCliente {
 			throw new Exception("error certsrv");
 		}
 		
-		byte[] certsrv = new byte[is.available()];
+		byte[] certsrv = new byte[0];
+		
+		//Wait for bytes to be written on the socket
+		while (certsrv.length == 0) {
+			//System.out.println("certsv len: " + certsrv.length + " // actual len: " + is.available());
+			certsrv = new byte[is.available()];
+		}
+		
 		is.read(certsrv);
 		
 		if(X509.verificarCertServidor(certsrv)){
