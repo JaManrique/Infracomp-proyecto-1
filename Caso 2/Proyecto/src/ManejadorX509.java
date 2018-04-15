@@ -60,7 +60,7 @@ public class ManejadorX509 {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		keyGen.initialize(2048);
+		keyGen.initialize(2048/2);
 
 		//Llave para la que se va a crear el CD
 		KeyPair key = keyGen.generateKeyPair();

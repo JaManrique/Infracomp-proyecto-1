@@ -89,6 +89,7 @@ public class MainCliente {
 		Key llaveServ = X509.extraerLlave(certsrv);
 		
 		String[] S = br.readLine().split(":");
+		
 		if(!S[0].equals(INICIO)){
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
