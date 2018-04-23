@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.security.Key;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
@@ -34,6 +36,10 @@ public class MainCliente {
 
 	private String serverIp = "localhost";
 	private Key llaveCliente = null;
+	private long t1, t2;
+	private static int nErrores = 0;
+	private static List<Long> listT1 = new ArrayList<>();
+	private static List<Long> listT2 = new ArrayList<>();
 	
 	public MainCliente() {
 		X509 = new ManejadorX509();
@@ -49,6 +55,7 @@ public class MainCliente {
 		pw.println(HOLA);
 		String s = br.readLine();
 		if(!INICIO.equals(s)){
+			nErrores++;
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
@@ -64,6 +71,7 @@ public class MainCliente {
 		
 		s = br.readLine();
 		if(!CERT_SERVIDOR.equals(s)){
+			nErrores++;
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error certsrv");
 		}
@@ -77,21 +85,26 @@ public class MainCliente {
 		}
 		
 		is.read(certsrv);
+		long t1 = System.currentTimeMillis();
 		
 		if(X509.verificarCertServidor(certsrv)){
 			pw.println(ESTADO_OK);
 		}
 		else{
 			pw.println(ESTADO_ERROR);
+			nErrores++;
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("certificado erroneo");
 		}
 
 		Key llaveServ = X509.extraerLlave(certsrv);
+		t1 = System.currentTimeMillis() - t1;
+		listT1.add(t1);
 		
 		String[] S = br.readLine().split(":");
 		
 		if(!S[0].equals(INICIO)){
+			nErrores++;
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
@@ -99,10 +112,13 @@ public class MainCliente {
 		Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
 		
 		String pos = "41 24.2028, 2 10.4418";
+		long t2 = System.currentTimeMillis();
 		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
 		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
 		
 		verificarEstado(br.readLine());
+		t2 = System.currentTimeMillis() - t2;
+		listT2.add(t2);
 		
 		cerrarRecursos(socket, br, pw);
 
@@ -119,9 +135,11 @@ public class MainCliente {
 			return;
 		}
 		else if(ESTADO_ERROR.equals(S)){
+			nErrores++;
 			throw new Exception("estado error");
 		}
 		else{
+			nErrores++;
 			throw new Exception("error comunicacion");
 		}
 	}
