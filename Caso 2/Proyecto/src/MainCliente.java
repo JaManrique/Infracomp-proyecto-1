@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +41,7 @@ public class MainCliente {
 	private static int nErrores = 0;
 	private static List<Long> listT1 = new ArrayList<>();
 	private static List<Long> listT2 = new ArrayList<>();
+	private static String log = "./data/log.txt";
 	
 	public MainCliente() {
 		X509 = new ManejadorX509();
@@ -51,27 +53,31 @@ public class MainCliente {
 		InputStream is = socket.getInputStream();
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		PrintWriter pw = new PrintWriter(os, true);
+		PrintWriter logger = new PrintWriter(new File(log));
+		logger.println("Inicio");
 		
 		pw.println(HOLA);
 		String s = br.readLine();
 		if(!INICIO.equals(s)){
 			nErrores++;
+			logger.println("Error");
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
 		pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
 		
-		verificarEstado(br.readLine());
+		verificarEstado(br.readLine(), logger);
 		
 		pw.println(CERT_CLIENTE);
 		os.write(X509.darCertCliente());
 		os.flush();
 		
-		verificarEstado(br.readLine());
+		verificarEstado(br.readLine(), logger);
 		
 		s = br.readLine();
 		if(!CERT_SERVIDOR.equals(s)){
 			nErrores++;
+			logger.println("Error");
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error certsrv");
 		}
@@ -93,6 +99,7 @@ public class MainCliente {
 		else{
 			pw.println(ESTADO_ERROR);
 			nErrores++;
+			logger.println("Error");
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("certificado erroneo");
 		}
@@ -100,11 +107,13 @@ public class MainCliente {
 		Key llaveServ = X509.extraerLlave(certsrv);
 		t1 = System.currentTimeMillis() - t1;
 		listT1.add(t1);
+		logger.println("t1 " + t1);
 		
 		String[] S = br.readLine().split(":");
 		
 		if(!S[0].equals(INICIO)){
 			nErrores++;
+			logger.println("Error");
 			cerrarRecursos(socket, br, pw);
 			throw new Exception("error al iniciar");
 		}
@@ -116,9 +125,10 @@ public class MainCliente {
 		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
 		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
 		
-		verificarEstado(br.readLine());
+		verificarEstado(br.readLine(), logger);
 		t2 = System.currentTimeMillis() - t2;
 		listT2.add(t2);
+		logger.println("t2 " + t2);
 		
 		cerrarRecursos(socket, br, pw);
 
@@ -130,16 +140,18 @@ public class MainCliente {
 		socket.close();
 	}
 
-	private void verificarEstado(String S) throws Exception{
+	private void verificarEstado(String S, PrintWriter logger) throws Exception{
 		if(ESTADO_OK.equals(S)){
 			return;
 		}
 		else if(ESTADO_ERROR.equals(S)){
 			nErrores++;
+			logger.println("Error");
 			throw new Exception("estado error");
 		}
 		else{
 			nErrores++;
+			logger.println("Error");
 			throw new Exception("error comunicacion");
 		}
 	}
