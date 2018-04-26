@@ -10,8 +10,10 @@ import java.net.Socket;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.crypto.spec.SecretKeySpec;
+
 
 
 
@@ -149,9 +151,10 @@ public class MainCliente extends Thread{
 	public static void main(String[] args) {
 		try {
 			int nIteraciones = 0, rampUp = 0;
-			BufferedReader br = new BufferedReader(new FileReader(params));
-			nIteraciones = Integer.parseInt(br.readLine());
-			rampUp = Integer.parseInt(br.readLine());
+			Properties p = new Properties();
+			p.load(new FileReader(params));
+			nIteraciones = Integer.parseInt(p.getProperty("nIteraciones"));
+			rampUp = Integer.parseInt(p.getProperty("rampUp"));
 			
 			long start = System.currentTimeMillis();
 			List<MainCliente> threadList = new ArrayList<>();
@@ -188,7 +191,6 @@ public class MainCliente extends Thread{
 
 			PrintWriter logger = new PrintWriter(new File(log));
 			logger.print(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests);
-			br.close();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
