@@ -2,23 +2,22 @@ import os
 from datetime import datetime
 
 PERF_LOG = 'perfLogMiercoles.csv'
-TESTS_DIRECTORY = 'testResults'
+TESTS_FILE = 'testResults/results.txt'
 RESULTS_FILE = 'results.res'
 
 CPU = 'cpu'
 MEMORY = 'memory'
 NETWORK = 'network'
 
-def extract_from_test(file_path):
+def extract_from_test(test_line):
   data = {}
-  with open(file_path) as file:
-    info = file.readLine()
-    data['start'] = float(info[0])
-    data['end'] = float(info[1])
-    data['test_type'] = info[2]
-    data['key_creation_time'] = info[3]
-    data['avg_update_time'] = info[4]
-    data['failed_requests'] = info[5]
+  info = test_line.split(',')
+  data['start'] = float(info[0])
+  data['end'] = float(info[1])
+  data['test_type'] = info[2]
+  data['key_creation_time'] = info[3]
+  data['avg_update_time'] = info[4]
+  data['failed_requests'] = info[5]
   return data
 
 def append_result(data):
@@ -59,11 +58,10 @@ def extract_from_perf_logs(data):
   #Method modifies data, so there is no need to return
 
 def extract_data():
-  directory = os.fsencode(TESTS_DIRECTORY)
-  for file_bytes in os.listdir(directory):
-    file_path = TESTS_DIRECTORY + '/' + os.fsdecode(file_bytes)
-    data = extract_from_test(file_path)
-    extract_from_perf_logs(data)
-    append_result(data)
+  with open(RESULTS_FILE) as file:
+    for line in file:
+      data = extract_from_test(line)
+      extract_from_perf_logs(data)
+      append_result(data)
 
 extract_data()
