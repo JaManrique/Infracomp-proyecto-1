@@ -129,7 +129,6 @@ public class ManejadorX509 {
 
 	public byte[] darCertCliente() {
 		try {
-			//return cert.getEncoded();
 			return cert1.getEncoded();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -140,7 +139,7 @@ public class ManejadorX509 {
 	public boolean verificarCertServidor(byte[] certsrv) {
 		boolean answer = false;
 		try {
-			System.out.println(certsrv);
+//			System.out.println(certsrv);
 			X509CertificateHolder ch = new X509CertificateHolder(certsrv);
 			ContentVerifierProvider contentVerifierProvider = new JcaContentVerifierProviderBuilder()
 					.setProvider("BC").build(ch.getSubjectPublicKeyInfo());

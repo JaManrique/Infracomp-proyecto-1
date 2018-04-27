@@ -1,2 +1,2 @@
-nIteraciones = 400
+nIteraciones = 50
 rampUp = 20

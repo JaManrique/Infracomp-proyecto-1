@@ -35,9 +35,11 @@ public class MainCliente extends Thread{
 	private static final String SHA1 = "HMACSHA1";
 	private static final String SHA256 = "HMACSHA256";
 
+	private static final boolean CAMBIAR_THREAD = true;
+	
 	private static ManejadorX509 X509;
 
-	private String serverIp = "localhost";
+	private String serverIp = "25.5.63.71"; //IP de Hamachi
 	private Key llaveCliente = null;
 	private long t1, t2;
 	private boolean error;
@@ -70,6 +72,7 @@ public class MainCliente extends Thread{
 		verificarEstado(br.readLine());
 
 		pw.println(CERT_CLIENTE);
+//		pw.println(X509.darCertCliente());
 		os.write(X509.darCertCliente());
 		os.flush();
 
