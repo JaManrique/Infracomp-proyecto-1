@@ -124,7 +124,7 @@ public class MainCliente extends Thread{
 		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
 		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
 
-		verificarEstado(br.readLine());
+//		verificarEstado(br.readLine());
 		t2 = System.currentTimeMillis() - t;
 
 		cerrarRecursos(socket, br, pw);
@@ -188,12 +188,14 @@ public class MainCliente extends Thread{
 					failedRequests++;
 				}
 			}
-			keyCreationTime = keyCreationTime/numKeyTimes;
-			updateTime = updateTime/numUpdateTimes;
-			String type = nIteraciones + " iteraciones, ramp up de " + rampUp + " ms, con Seguridad";
+			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
+			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
+			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad";
 
 			PrintWriter logger = new PrintWriter(new File(log));
-			logger.print(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests);
+			logger.println(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests);
+			logger.flush();
+			logger.close();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
