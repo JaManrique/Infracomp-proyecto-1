@@ -134,6 +134,7 @@ public class MainCliente extends Thread{
 			t2 = System.currentTimeMillis() - t;
 
 		} catch (Exception e) {
+			error = true;
 			e.printStackTrace();
 		} finally {
 			try {
