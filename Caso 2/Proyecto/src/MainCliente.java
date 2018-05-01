@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -192,8 +193,8 @@ public class MainCliente extends Thread{
 			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
 			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad";
 
-			PrintWriter logger = new PrintWriter(new File(log));
-			logger.println(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests);
+			FileWriter logger = new FileWriter(new File(log), true);
+			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
 			logger.flush();
 			logger.close();
 		}

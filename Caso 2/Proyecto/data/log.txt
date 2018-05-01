@@ -1,1 +1,0 @@
-1525114251735,1525114293613,50 iteraciones ramp up de 20 ms con Seguridad,3.25,3.15625,2
