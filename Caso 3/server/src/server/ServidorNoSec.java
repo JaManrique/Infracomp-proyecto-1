@@ -9,19 +9,19 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Servidor {
+public class ServidorNoSec {
 	private static final int TIME_OUT = 5000;
-	public static final int N_THREADS = 1;
+	public static final int N_THREADS = 5;
 	private static ServerSocket elSocket;
-	private static Servidor elServidor;
+	private static ServidorNoSec elServidor;
 
-	public Servidor() {
+	public ServidorNoSec() {
 	}
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
 
 	public static void main(String[] args) throws IOException {
-		elServidor = new Servidor();
+		elServidor = new ServidorNoSec();
 		elServidor.runServidor();
 	}
 
@@ -39,7 +39,7 @@ public class Servidor {
 				sThread = elSocket.accept();
 				sThread.setSoTimeout(TIME_OUT);
 				System.out.println("Thread " + num + " recibe a un cliente.");
-				executor.submit(new Worker(num, sThread));
+				executor.submit(new WorkerNoSec(num, sThread));
 				num++;
 			}
 		} catch (Exception e) {

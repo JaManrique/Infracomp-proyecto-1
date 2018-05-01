@@ -25,7 +25,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import server.Seguridad;
 import server.Transformacion;
 
-public class Worker implements Runnable {
+public class WorkerNoSec implements Runnable {
     public static final boolean SHOW_ERROR = true;
     public static final boolean SHOW_S_TRACE = true;
     public static final boolean SHOW_IN = true;
@@ -65,7 +65,7 @@ public class Worker implements Runnable {
     
     private X509Certificate certificadoCliente;
 
-    public Worker(int pId, Socket pSocket) {
+    public WorkerNoSec(int pId, Socket pSocket) {
         id = pId;
         ss = pSocket;
         Security.addProvider(new BouncyCastleProvider());
@@ -78,13 +78,13 @@ public class Worker implements Runnable {
 
     private String read(BufferedReader reader) throws IOException {
         String linea = reader.readLine();
-        //System.out.println("Thread " + id + " (recibe) de <<CLNT-" + linea);
+        System.out.println("Thread " + id + " (recibe) de <<CLNT-" + linea);
         return linea;
     }
 
     private void write(PrintWriter writer, String msg) {
         writer.println(msg);
-        //System.out.println("Srv " + id + ">>SERV (envia):" + msg);
+        System.out.println("Srv " + id + ">>SERV (envia):" + msg);
     }
 
     public void run() {
@@ -101,7 +101,7 @@ public class Worker implements Runnable {
             	{
             		int N = Integer.parseInt(linea.split(" ")[1]);
             		Servidor.changeThreadPoolSize(N);
-            		throw new Exception("Número de threads cambiado");
+            		throw new Exception("Nï¿½mero de threads cambiado");
             	}
             	else {
                     write(writer, "Error en el formato. Cerrando conexion");
@@ -200,53 +200,23 @@ public class Worker implements Runnable {
                 System.out.println("Error de confirmaciÃ³n, cerrando conexion: " + linea);
                 return;
             }
-            
-            
-            // inicio de la comunicacion de las llaves
-
-            SecretKey llaveSimetrica = Seguridad.keyGenGenerator(algoritmos[1]);
-            byte[] cyph = Seguridad.aE(llaveSimetrica.getEncoded(),
-                    certificadoCliente.getPublicKey(), algoritmos[2]);
-
-            String llav = Transformacion.toHexString(cyph);           
-            write(writer, INICIO + SEPARADOR + llav); // aqui le enviamos al cliente la llave simetrica cifrada con la asimetrica del certificado
+                     
+            write(writer, INICIO); // aqui le enviamos al cliente la llave simetrica cifrada con la asimetrica del certificado
 
             // recibimos respuesta del cliente con la localizacion cifrada con la simetrica. 
             linea = read(reader);
-            String[] parts = linea.split(SEPARADOR);
-            String cipheredLocationHex = parts[1];
             
-            byte[] cipheredLocationBytes = Transformacion.toByteArray(cipheredLocationHex);
-            
-            byte[] cipheredLocation = Seguridad.sD(
-            		cipheredLocationBytes, llaveSimetrica,
-                    algoritmos[1]);
-            
-           
-                       
-            // recibimos el digest cifrado con la clave publica del server
+            if (!linea.startsWith("ACT1"))
+              throw new Exception("No comienza con ACT1");
+
             linea = read(reader);
-            String[] parts2 = linea.split(SEPARADOR);
-            String digestHex = parts2[1];
-            byte[] encryptedDigestBytes = Transformacion.toByteArray(digestHex);
-            
-            byte[] digestBytes = Seguridad.aD(
-            		encryptedDigestBytes, keyPair.getPrivate(),
-                    algoritmos[2]);
-            
-            // hacemos la verificacion final
-            boolean verificacion = Seguridad.verifyIntegrity(cipheredLocation,
-                    llaveSimetrica, algoritmos[3], digestBytes);
 
-            if (verificacion) {
-                String rta = ESTADO + SEPARADOR + OK;
-                write(writer, rta);
+            if (!linea.startsWith("ACT2"))
+              throw new Exception("No comienza con ACT2");
 
-            } else {
-                String rta = ESTADO + SEPARADOR + ERROR;
-                write(writer, rta);
-            }
-            System.out.println("Thread " + id + " Terminando\n");
+            String rta = ESTADO + SEPARADOR + OK;
+            write(writer, rta);
+            System.out.println("Thread " + id + "Terminando\n");
 
         } catch (NullPointerException e) {
 
