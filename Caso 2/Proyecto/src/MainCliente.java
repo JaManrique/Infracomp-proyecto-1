@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,7 +37,7 @@ public class MainCliente extends Thread{
 	private static final String SHA256 = "HMACSHA256";
 
 	private static final boolean CAMBIAR_THREAD = true;
-	
+
 	private static ManejadorX509 X509;
 
 	private String serverIp = "25.5.63.71"; //IP de Hamachi
@@ -53,82 +54,96 @@ public class MainCliente extends Thread{
 		error = false;
 	}
 
-	public void reportarEstado() throws IOException, Exception{
-		Socket socket = new Socket(serverIp, 8080);
-		OutputStream os = socket.getOutputStream();
-		InputStream is = socket.getInputStream();
-		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		PrintWriter pw = new PrintWriter(os, true);
+	public void reportarEstado(){
+		Socket socket = null;
+		PrintWriter pw = null;
+		BufferedReader br = null;
+		try {
+			socket = new Socket(serverIp, 8080);
+			OutputStream os = socket.getOutputStream();
+			InputStream is = socket.getInputStream();
+			br = new BufferedReader(new InputStreamReader(is));
+			pw = new PrintWriter(os, true);
 
-		pw.println(HOLA);
-		String s = br.readLine();
-		if(!INICIO.equals(s)){
-			error = true;
+			pw.println(HOLA);
+			String s = br.readLine();
+			if(!INICIO.equals(s)){
+				error = true;
+				cerrarRecursos(socket, br, pw);
+				throw new Exception("error al iniciar");
+			}
+			pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
+
+			verificarEstado(br.readLine(), socket, br, pw);
+
+			pw.println(CERT_CLIENTE);
+			//		pw.println(X509.darCertCliente());
+			os.write(X509.darCertCliente());
+			os.flush();
+
+			verificarEstado(br.readLine(), socket, br, pw);
+
+			s = br.readLine();
+			if(!CERT_SERVIDOR.equals(s)){
+				error = true;
+				cerrarRecursos(socket, br, pw);
+				throw new Exception("error certsrv");
+			}
+
+			byte[] certsrv = new byte[0];
+
+			//Wait for bytes to be written on the socket
+			while (certsrv.length == 0) {
+				//System.out.println("certsv len: " + certsrv.length + " // actual len: " + is.available());
+				certsrv = new byte[is.available()];
+			}
+
+			is.read(certsrv);
+			long t = System.currentTimeMillis();
+
+			if(X509.verificarCertServidor(certsrv)){
+				pw.println(ESTADO_OK);
+			}
+			else{
+				pw.println(ESTADO_ERROR);
+				error = true;
+				cerrarRecursos(socket, br, pw);
+				throw new Exception("certificado erroneo");
+			}
+
+			Key llaveServ = X509.extraerLlave(certsrv);
+			t1 = System.currentTimeMillis() - t;
+
+			String[] S = br.readLine().split(":");
+
+			if(!S[0].equals(INICIO)){
+				error = true;
+				cerrarRecursos(socket, br, pw);
+				throw new Exception("error al iniciar");
+			}
+			byte[] bytesSesion = ManejadorRSA.descifrar(X509.darLlavePrivada(), S[1]);
+			Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
+
+			String pos = "41 24.2028, 2 10.4418";
+			t = System.currentTimeMillis();
+			pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
+			pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
+
+			//		verificarEstado(br.readLine());
+			t2 = System.currentTimeMillis() - t;
+
 			cerrarRecursos(socket, br, pw);
-			throw new Exception("error al iniciar");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				cerrarRecursos(socket, br, pw);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
-
-		verificarEstado(br.readLine());
-
-		pw.println(CERT_CLIENTE);
-//		pw.println(X509.darCertCliente());
-		os.write(X509.darCertCliente());
-		os.flush();
-
-		verificarEstado(br.readLine());
-
-		s = br.readLine();
-		if(!CERT_SERVIDOR.equals(s)){
-			error = true;
-			cerrarRecursos(socket, br, pw);
-			throw new Exception("error certsrv");
-		}
-
-		byte[] certsrv = new byte[0];
-
-		//Wait for bytes to be written on the socket
-		while (certsrv.length == 0) {
-			//System.out.println("certsv len: " + certsrv.length + " // actual len: " + is.available());
-			certsrv = new byte[is.available()];
-		}
-
-		is.read(certsrv);
-		long t = System.currentTimeMillis();
-
-		if(X509.verificarCertServidor(certsrv)){
-			pw.println(ESTADO_OK);
-		}
-		else{
-			pw.println(ESTADO_ERROR);
-			error = true;
-			cerrarRecursos(socket, br, pw);
-			throw new Exception("certificado erroneo");
-		}
-
-		Key llaveServ = X509.extraerLlave(certsrv);
-		t1 = System.currentTimeMillis() - t;
-
-		String[] S = br.readLine().split(":");
-
-		if(!S[0].equals(INICIO)){
-			error = true;
-			cerrarRecursos(socket, br, pw);
-			throw new Exception("error al iniciar");
-		}
-		byte[] bytesSesion = ManejadorRSA.descifrar(X509.darLlavePrivada(), S[1]);
-		Key llaveSesion = new SecretKeySpec(bytesSesion, 0, bytesSesion.length, "AES");
-
-		String pos = "41 24.2028, 2 10.4418";
-		t = System.currentTimeMillis();
-		pw.println(ACT1 + ":" + ManejadorAES.cifrar(llaveSesion, pos));
-		pw.println(ACT2 + ":" + ManejadorRSA.cifrar(llaveServ, ManejadorMD5.hash(pos)));
-
-//		verificarEstado(br.readLine());
-		t2 = System.currentTimeMillis() - t;
-
-		cerrarRecursos(socket, br, pw);
-
 	}
 
 	private void cerrarRecursos(Socket socket, BufferedReader br, PrintWriter pw) throws IOException {
@@ -137,16 +152,18 @@ public class MainCliente extends Thread{
 		socket.close();
 	}
 
-	private void verificarEstado(String S) throws Exception{
+	private void verificarEstado(String S, Socket socket, BufferedReader br, PrintWriter pw) throws Exception{
 		if(ESTADO_OK.equals(S)){
 			return;
 		}
 		else if(ESTADO_ERROR.equals(S)){
 			error = true;
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("estado error");
 		}
 		else{
 			error = true;
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("error comunicacion");
 		}
 	}
@@ -158,7 +175,7 @@ public class MainCliente extends Thread{
 			p.load(new FileReader(params));
 			nIteraciones = Integer.parseInt(p.getProperty("nIteraciones"));
 			rampUp = Integer.parseInt(p.getProperty("rampUp"));
-			
+
 			long start = System.currentTimeMillis();
 			List<MainCliente> threadList = new ArrayList<>();
 			for(int i=0; i < nIteraciones; i++) {
@@ -167,13 +184,12 @@ public class MainCliente extends Thread{
 				cl.start();
 				sleep(rampUp);
 			}
-
 			for(MainCliente thread : threadList) {
 				thread.join();
 			}
 			long end = System.currentTimeMillis();
-			
-			long keyCreationTime = 0, updateTime = 0;
+
+			double keyCreationTime = 0, updateTime = 0;
 			int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
 			for(MainCliente cliente : threadList) {
 				if(cliente.t1 > 0) {
@@ -190,10 +206,10 @@ public class MainCliente extends Thread{
 			}
 			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
 			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad";
+			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad y 2 threads";
 
-			PrintWriter logger = new PrintWriter(new File(log));
-			logger.println(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests);
+			FileWriter logger = new FileWriter(new File(log), true);
+			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
 			logger.flush();
 			logger.close();
 		}
@@ -207,12 +223,6 @@ public class MainCliente extends Thread{
 	@Override
 	public void run() {
 		super.run();
-		try {
-			reportarEstado();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		reportarEstado();
 	}
 }
