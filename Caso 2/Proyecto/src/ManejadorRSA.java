@@ -19,7 +19,7 @@ public class ManejadorRSA {
 		Cipher cipher = Cipher.getInstance("RSA");
 		//byte[] clearText = msg;
 		cipher.init(Cipher.DECRYPT_MODE, pKey);
-		System.out.println(DatatypeConverter.parseHexBinary(msg));
+		//System.out.println(DatatypeConverter.parseHexBinary(msg));
 		byte[] cipheredText = cipher.doFinal(DatatypeConverter.parseHexBinary(msg));
 		return cipheredText;
 	}

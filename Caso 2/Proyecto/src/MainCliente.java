@@ -129,7 +129,6 @@ public class MainCliente extends Thread{
 		t2 = System.currentTimeMillis() - t;
 
 		cerrarRecursos(socket, br, pw);
-
 	}
 
 	private void cerrarRecursos(Socket socket, BufferedReader br, PrintWriter pw) throws IOException {
@@ -170,7 +169,6 @@ public class MainCliente extends Thread{
 				cl.start();
 				sleep(rampUp);
 			}
-
 			for(MainCliente thread : threadList) {
 				thread.join();
 			}
