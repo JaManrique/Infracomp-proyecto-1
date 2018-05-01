@@ -1,2 +1,2 @@
-nIteraciones = 50
-rampUp = 20
+nIteraciones = 80
+rampUp = 100

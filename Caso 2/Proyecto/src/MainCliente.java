@@ -70,14 +70,14 @@ public class MainCliente extends Thread{
 		}
 		pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
 
-		verificarEstado(br.readLine());
+		verificarEstado(br.readLine(), socket, br, pw);
 
 		pw.println(CERT_CLIENTE);
 //		pw.println(X509.darCertCliente());
 		os.write(X509.darCertCliente());
 		os.flush();
 
-		verificarEstado(br.readLine());
+		verificarEstado(br.readLine(), socket, br, pw);
 
 		s = br.readLine();
 		if(!CERT_SERVIDOR.equals(s)){
@@ -138,16 +138,18 @@ public class MainCliente extends Thread{
 		socket.close();
 	}
 
-	private void verificarEstado(String S) throws Exception{
+	private void verificarEstado(String S, Socket socket, BufferedReader br, PrintWriter pw) throws Exception{
 		if(ESTADO_OK.equals(S)){
 			return;
 		}
 		else if(ESTADO_ERROR.equals(S)){
 			error = true;
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("estado error");
 		}
 		else{
 			error = true;
+			cerrarRecursos(socket, br, pw);
 			throw new Exception("error comunicacion");
 		}
 	}
@@ -174,7 +176,7 @@ public class MainCliente extends Thread{
 			}
 			long end = System.currentTimeMillis();
 			
-			long keyCreationTime = 0, updateTime = 0;
+			double keyCreationTime = 0, updateTime = 0;
 			int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
 			for(MainCliente cliente : threadList) {
 				if(cliente.t1 > 0) {
@@ -191,7 +193,7 @@ public class MainCliente extends Thread{
 			}
 			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
 			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad";
+			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad y 2 threads";
 
 			FileWriter logger = new FileWriter(new File(log), true);
 			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
