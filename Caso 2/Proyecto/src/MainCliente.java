@@ -56,12 +56,14 @@ public class MainCliente extends Thread{
 
 	public void reportarEstado(){
 		Socket socket = null;
+		OutputStream os = null;
+		InputStream is = null;
 		PrintWriter pw = null;
 		BufferedReader br = null;
 		try {
 			socket = new Socket(serverIp, 8080);
-			OutputStream os = socket.getOutputStream();
-			InputStream is = socket.getInputStream();
+			os = socket.getOutputStream();
+			is = socket.getInputStream();
 			br = new BufferedReader(new InputStreamReader(is));
 			pw = new PrintWriter(os, true);
 
@@ -69,24 +71,22 @@ public class MainCliente extends Thread{
 			String s = br.readLine();
 			if(!INICIO.equals(s)){
 				error = true;
-				cerrarRecursos(socket, br, pw);
 				throw new Exception("error al iniciar");
 			}
 			pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
 
-			verificarEstado(br.readLine(), socket, br, pw);
+			verificarEstado(br.readLine());
 
 			pw.println(CERT_CLIENTE);
 			//		pw.println(X509.darCertCliente());
 			os.write(X509.darCertCliente());
 			os.flush();
 
-			verificarEstado(br.readLine(), socket, br, pw);
+			verificarEstado(br.readLine());
 
 			s = br.readLine();
 			if(!CERT_SERVIDOR.equals(s)){
 				error = true;
-				cerrarRecursos(socket, br, pw);
 				throw new Exception("error certsrv");
 			}
 
@@ -107,7 +107,6 @@ public class MainCliente extends Thread{
 			else{
 				pw.println(ESTADO_ERROR);
 				error = true;
-				cerrarRecursos(socket, br, pw);
 				throw new Exception("certificado erroneo");
 			}
 
@@ -118,7 +117,6 @@ public class MainCliente extends Thread{
 
 			if(!S[0].equals(INICIO)){
 				error = true;
-				cerrarRecursos(socket, br, pw);
 				throw new Exception("error al iniciar");
 			}
 			byte[] bytesSesion = ManejadorRSA.descifrar(X509.darLlavePrivada(), S[1]);
@@ -132,38 +130,33 @@ public class MainCliente extends Thread{
 			//		verificarEstado(br.readLine());
 			t2 = System.currentTimeMillis() - t;
 
-			cerrarRecursos(socket, br, pw);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				cerrarRecursos(socket, br, pw);
+				pw.close();
+				br.close();
+				is.close();
+				os.close();
+				socket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	private void cerrarRecursos(Socket socket, BufferedReader br, PrintWriter pw) throws IOException {
-		pw.close();
-		br.close();
-		socket.close();
-	}
-
-	private void verificarEstado(String S, Socket socket, BufferedReader br, PrintWriter pw) throws Exception{
+	private void verificarEstado(String S) throws Exception{
 		if(ESTADO_OK.equals(S)){
 			return;
 		}
 		else if(ESTADO_ERROR.equals(S)){
 			error = true;
-			cerrarRecursos(socket, br, pw);
 			throw new Exception("estado error");
 		}
 		else{
 			error = true;
-			cerrarRecursos(socket, br, pw);
 			throw new Exception("error comunicacion");
 		}
 	}
