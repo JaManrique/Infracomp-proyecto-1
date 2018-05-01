@@ -44,7 +44,7 @@ public class MainClienteNoSeguridad extends Thread{
 	private Key llaveCliente = null;
 	private long t1, t2;
 	private boolean error;
-	private static String log = "./data/log.txt";
+	private static String log = "./data/logNoSec.txt";
 	private static String params = "./data/params.txt";
 
 	public MainClienteNoSeguridad() {
@@ -195,7 +195,7 @@ public class MainClienteNoSeguridad extends Thread{
 			}
 			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
 			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + "it / " + rampUp + "ms [Secure][2 th]";
+			String type = nIteraciones + "it / " + rampUp + "ms [NOTSec][2 th]";
 
 			FileWriter logger = new FileWriter(new File(log), true);
 			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");

@@ -78,13 +78,13 @@ public class WorkerNoSec implements Runnable {
 
     private String read(BufferedReader reader) throws IOException {
         String linea = reader.readLine();
-        System.out.println("Thread " + id + " (recibe) de <<CLNT-" + linea);
+        //System.out.println("Thread " + id + " (recibe) de <<CLNT-" + linea);
         return linea;
     }
 
     private void write(PrintWriter writer, String msg) {
         writer.println(msg);
-        System.out.println("Srv " + id + ">>SERV (envia):" + msg);
+        //System.out.println("Srv " + id + ">>SERV (envia):" + msg);
     }
 
     public void run() {
