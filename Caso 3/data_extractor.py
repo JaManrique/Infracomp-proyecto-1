@@ -34,7 +34,7 @@ def append_result(data):
   
 def validInterval(perf_log_data, test_data):
   sample_date = datetime.strptime(perf_log_data[0], '%m/%d/%Y %H:%M:%S.%f').timestamp()*1000
-  print(test_data['start'], ' vs. ', sample_date, ' = ', test_data['start'] - sample_date)
+  #print(test_data['start'], ' vs. ', sample_date, ' = ', test_data['start'] - sample_date)
   return test_data['start'] < sample_date and sample_date < test_data['end']
 
 def extract_from_perf_logs(data):
@@ -55,7 +55,6 @@ def extract_from_perf_logs(data):
       if validInterval(info, data):
         alreadyRead = True
         cpu_avg += float(info[2])
-        print(info[3])
         memory += float(info[3])
         network_bytes += float(info[1])
         count += 1
