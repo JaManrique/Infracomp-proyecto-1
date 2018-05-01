@@ -130,10 +130,7 @@ public class MainCliente extends Thread{
 			//		verificarEstado(br.readLine());
 			t2 = System.currentTimeMillis() - t;
 
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 			try {
 				pw.close();
@@ -169,42 +166,44 @@ public class MainCliente extends Thread{
 			nIteraciones = Integer.parseInt(p.getProperty("nIteraciones"));
 			rampUp = Integer.parseInt(p.getProperty("rampUp"));
 
-			long start = System.currentTimeMillis();
-			List<MainCliente> threadList = new ArrayList<>();
-			for(int i=0; i < nIteraciones; i++) {
-				MainCliente cl = new MainCliente();
-				threadList.add(cl);
-				cl.start();
-				sleep(rampUp);
-			}
-			for(MainCliente thread : threadList) {
-				thread.join();
-			}
-			long end = System.currentTimeMillis();
+			for(int j=0; j<10;j++) {
+				long start = System.currentTimeMillis();
+				List<MainCliente> threadList = new ArrayList<>();
+				for(int i=0; i < nIteraciones; i++) {
+					MainCliente cl = new MainCliente();
+					threadList.add(cl);
+					cl.start();
+					sleep(rampUp);
+				}
+				for(MainCliente thread : threadList) {
+					thread.join();
+				}
+				long end = System.currentTimeMillis();
 
-			double keyCreationTime = 0, updateTime = 0;
-			int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
-			for(MainCliente cliente : threadList) {
-				if(cliente.t1 > 0) {
-					keyCreationTime += cliente.t1;
-					numKeyTimes++;
+				double keyCreationTime = 0, updateTime = 0;
+				int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
+				for(MainCliente cliente : threadList) {
+					if(cliente.t1 > 0) {
+						keyCreationTime += cliente.t1;
+						numKeyTimes++;
+					}
+					if(cliente.t2 > 0) {
+						updateTime += cliente.t2;
+						numUpdateTimes++;
+					}
+					if(cliente.error) {
+						failedRequests++;
+					}
 				}
-				if(cliente.t2 > 0) {
-					updateTime += cliente.t2;
-					numUpdateTimes++;
-				}
-				if(cliente.error) {
-					failedRequests++;
-				}
-			}
-			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
-			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + "it / " + rampUp + "ms [Secure][2 th]";
+				keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
+				updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
+				String type = nIteraciones + "it / " + rampUp + "ms [Secure][2 th]";
 
-			FileWriter logger = new FileWriter(new File(log), true);
-			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
-			logger.flush();
-			logger.close();
+				FileWriter logger = new FileWriter(new File(log), true);
+				logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
+				logger.flush();
+				logger.close();
+			}
 		}
 		catch (IOException e) {
 			e.printStackTrace();
