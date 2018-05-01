@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -70,14 +69,14 @@ public class MainCliente extends Thread{
 		}
 		pw.println(ALG + ":" + AES + ":" + RSA + ":" + MD5);
 
-		verificarEstado(br.readLine(), socket, br, pw);
+		verificarEstado(br.readLine());
 
 		pw.println(CERT_CLIENTE);
 //		pw.println(X509.darCertCliente());
 		os.write(X509.darCertCliente());
 		os.flush();
 
-		verificarEstado(br.readLine(), socket, br, pw);
+		verificarEstado(br.readLine());
 
 		s = br.readLine();
 		if(!CERT_SERVIDOR.equals(s)){
@@ -138,18 +137,16 @@ public class MainCliente extends Thread{
 		socket.close();
 	}
 
-	private void verificarEstado(String S, Socket socket, BufferedReader br, PrintWriter pw) throws Exception{
+	private void verificarEstado(String S) throws Exception{
 		if(ESTADO_OK.equals(S)){
 			return;
 		}
 		else if(ESTADO_ERROR.equals(S)){
 			error = true;
-			cerrarRecursos(socket, br, pw);
 			throw new Exception("estado error");
 		}
 		else{
 			error = true;
-			cerrarRecursos(socket, br, pw);
 			throw new Exception("error comunicacion");
 		}
 	}
@@ -176,7 +173,7 @@ public class MainCliente extends Thread{
 			}
 			long end = System.currentTimeMillis();
 			
-			double keyCreationTime = 0, updateTime = 0;
+			long keyCreationTime = 0, updateTime = 0;
 			int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
 			for(MainCliente cliente : threadList) {
 				if(cliente.t1 > 0) {
@@ -193,10 +190,10 @@ public class MainCliente extends Thread{
 			}
 			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
 			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad y 2 threads";
+			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad";
 
-			FileWriter logger = new FileWriter(new File(log), true);
-			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
+			PrintWriter logger = new PrintWriter(new File(log));
+			logger.println(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests);
 			logger.flush();
 			logger.close();
 		}
