@@ -93,13 +93,16 @@ public class MainCliente extends Thread{
 			byte[] certsrv = new byte[0];
 
 			//Wait for bytes to be written on the socket
+			long t = System.currentTimeMillis();
 			while (certsrv.length == 0) {
 				//System.out.println("certsv len: " + certsrv.length + " // actual len: " + is.available());
 				certsrv = new byte[is.available()];
+				if(System.currentTimeMillis() - t > 10000) 
+					throw new Exception("tiemout certificado");
 			}
 
 			is.read(certsrv);
-			long t = System.currentTimeMillis();
+			t = System.currentTimeMillis();
 
 			if(X509.verificarCertServidor(certsrv)){
 				pw.println(ESTADO_OK);
@@ -131,6 +134,7 @@ public class MainCliente extends Thread{
 			t2 = System.currentTimeMillis() - t;
 
 		} catch (Exception e) {
+			e.printStackTrace();
 		} finally {
 			try {
 				pw.close();
