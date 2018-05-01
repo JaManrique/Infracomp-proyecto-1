@@ -206,7 +206,7 @@ public class MainCliente extends Thread{
 			}
 			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
 			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + " iteraciones ramp up de " + rampUp + " ms con Seguridad y 2 threads";
+			String type = nIteraciones + "it / " + rampUp + "ms [Secure][2 th]";
 
 			FileWriter logger = new FileWriter(new File(log), true);
 			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
