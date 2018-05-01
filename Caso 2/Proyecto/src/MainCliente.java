@@ -97,7 +97,7 @@ public class MainCliente extends Thread{
 			while (certsrv.length == 0) {
 				//System.out.println("certsv len: " + certsrv.length + " // actual len: " + is.available());
 				certsrv = new byte[is.available()];
-				if(System.currentTimeMillis() - t > 10000) 
+				if(System.currentTimeMillis() - t > 5000) 
 					throw new Exception("tiemout certificado");
 			}
 
@@ -135,7 +135,7 @@ public class MainCliente extends Thread{
 
 		} catch (Exception e) {
 			error = true;
-			e.printStackTrace();
+//			e.printStackTrace();
 		} finally {
 			try {
 				pw.close();
