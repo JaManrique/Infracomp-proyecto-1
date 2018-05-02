@@ -93,13 +93,16 @@ public class MainClienteNoSeguridad extends Thread{
 			byte[] certsrv = new byte[0];
 
 			//Wait for bytes to be written on the socket
+			long t = System.currentTimeMillis();
 			while (certsrv.length == 0) {
 				//System.out.println("certsv len: " + certsrv.length + " // actual len: " + is.available());
 				certsrv = new byte[is.available()];
+				if(System.currentTimeMillis() - t > 5000) 
+					throw new Exception("tiemout certificado");
 			}
 
 			is.read(certsrv);
-			long t = System.currentTimeMillis();
+			t = System.currentTimeMillis();
 
 			if(X509.verificarCertServidor(certsrv)){
 				pw.println(ESTADO_OK);
@@ -109,7 +112,7 @@ public class MainClienteNoSeguridad extends Thread{
 				error = true;
 				throw new Exception("certificado erroneo");
 			}
-			
+
 			t1 = System.currentTimeMillis() - t;
 
 			String[] S = br.readLine().split(":");
@@ -118,18 +121,18 @@ public class MainClienteNoSeguridad extends Thread{
 				error = true;
 				throw new Exception("error al iniciar");
 			}
-			
+
+			String pos = "41 24.2028, 2 10.4418";
 			t = System.currentTimeMillis();
-			pw.println(ACT1 + ":" + "41 24.2028, 2 10.4418");
-			pw.println(ACT2 + ":" + "41 23.6312, 2 12.3499");
+			pw.println(ACT1 + ":" + pos);
+			pw.println(ACT2 + ":" + pos);
 
 			//		verificarEstado(br.readLine());
 			t2 = System.currentTimeMillis() - t;
 
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
+			error = true;
+//			e.printStackTrace();
 		} finally {
 			try {
 				pw.close();
@@ -165,42 +168,44 @@ public class MainClienteNoSeguridad extends Thread{
 			nIteraciones = Integer.parseInt(p.getProperty("nIteraciones"));
 			rampUp = Integer.parseInt(p.getProperty("rampUp"));
 
-			long start = System.currentTimeMillis();
-			List<MainClienteNoSeguridad> threadList = new ArrayList<>();
-			for(int i=0; i < nIteraciones; i++) {
-				MainClienteNoSeguridad cl = new MainClienteNoSeguridad();
-				threadList.add(cl);
-				cl.start();
-				sleep(rampUp);
-			}
-			for(MainClienteNoSeguridad thread : threadList) {
-				thread.join();
-			}
-			long end = System.currentTimeMillis();
+			for(int j=0; j<10;j++) {
+				long start = System.currentTimeMillis();
+				List<MainClienteNoSeguridad> threadList = new ArrayList<>();
+				for(int i=0; i < nIteraciones; i++) {
+					MainClienteNoSeguridad cl = new MainClienteNoSeguridad();
+					threadList.add(cl);
+					cl.start();
+					sleep(rampUp);
+				}
+				for(MainClienteNoSeguridad thread : threadList) {
+					thread.join();
+				}
+				long end = System.currentTimeMillis();
 
-			double keyCreationTime = 0, updateTime = 0;
-			int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
-			for(MainClienteNoSeguridad cliente : threadList) {
-				if(cliente.t1 > 0) {
-					keyCreationTime += cliente.t1;
-					numKeyTimes++;
+				double keyCreationTime = 0, updateTime = 0;
+				int numKeyTimes = 0, numUpdateTimes = 0, failedRequests = 0;
+				for(MainClienteNoSeguridad cliente : threadList) {
+					if(cliente.t1 > 0) {
+						keyCreationTime += cliente.t1;
+						numKeyTimes++;
+					}
+					if(cliente.t2 > 0) {
+						updateTime += cliente.t2;
+						numUpdateTimes++;
+					}
+					if(cliente.error) {
+						failedRequests++;
+					}
 				}
-				if(cliente.t2 > 0) {
-					updateTime += cliente.t2;
-					numUpdateTimes++;
-				}
-				if(cliente.error) {
-					failedRequests++;
-				}
-			}
-			keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
-			updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
-			String type = nIteraciones + "it / " + rampUp + "ms [NOTSec][2 th]";
+				keyCreationTime = numKeyTimes != 0? keyCreationTime/numKeyTimes : 0;
+				updateTime = numUpdateTimes != 0? updateTime/numUpdateTimes : 0;
+				String type = nIteraciones + "it / " + rampUp + "ms [NoSecure][8 th]";
 
-			FileWriter logger = new FileWriter(new File(log), true);
-			logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
-			logger.flush();
-			logger.close();
+				FileWriter logger = new FileWriter(new File(log), true);
+				logger.write(start + "," + end + "," + type + "," + keyCreationTime + "," + updateTime + "," + failedRequests + "\n");
+				logger.flush();
+				logger.close();
+			}
 		}
 		catch (IOException e) {
 			e.printStackTrace();
