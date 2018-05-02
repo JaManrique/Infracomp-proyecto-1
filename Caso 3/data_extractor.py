@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-PERF_LOG = 'perfLogs/bbb.csv'
+PERF_LOG = 'perfLogs/perfLogInfracomp.csv'
 TESTS_FILE = 'testResults/log.txt'
 RESULTS_FILE = 'results.csv'
 
