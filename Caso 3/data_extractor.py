@@ -3,7 +3,7 @@ from datetime import datetime
 
 PERF_LOG = 'perfLogs/bbb.csv'
 TESTS_FILE = 'testResults/log.txt'
-RESULTS_FILE = 'results.res'
+RESULTS_FILE = 'results.csv'
 
 CPU = 'cpu'
 MEMORY = 'memory'
